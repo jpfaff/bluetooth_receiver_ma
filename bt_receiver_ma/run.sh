@@ -3,7 +3,13 @@ set -e
 
 NAME=$(bashio::config 'bluetooth_name')
 
-bashio::log.info "Starting Bluetooth Receiver"
+bashio::log.info "Starting Bluetooth Receiver V3"
+
+export DBUS_SYSTEM_BUS_ADDRESS=unix:path=/run/dbus/system_bus_socket
+
+# Runtime dirs
+mkdir -p /var/run/pulse
+mkdir -p /tmp/pulse
 
 # Runtime dirs
 export XDG_RUNTIME_DIR=/tmp/runtime-root
