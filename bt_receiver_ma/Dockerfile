@@ -5,6 +5,7 @@ RUN apk add --no-cache \
     bash \
     bluez \
     bluez-deprecated \
+    bluez-openrc
     dbus \
     pipewire \
     wireplumber \
