@@ -18,9 +18,6 @@ chmod 700 $XDG_RUNTIME_DIR
 
 mkdir -p /run/dbus
 
-# DBus
-dbus-daemon --system --fork
-
 # Bluetooth
 if command -v bluetoothd >/dev/null 2>&1; then
     bluetoothd --experimental &
