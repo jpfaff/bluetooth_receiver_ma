@@ -5,13 +5,13 @@ RUN apk add --no-cache \
     bash \
     bluez \
     bluez-deprecated \
-    bluez-openrc
     dbus \
-    pipewire \
-    wireplumber \
-    ffmpeg \
-    pulseaudio-utils
+    pulseaudio \
+    pulseaudio-utils \
+    pulseaudio-bluez \
+    ffmpeg
 
 COPY run.sh /run.sh
 RUN chmod +x /run.sh
+
 CMD ["/run.sh"]

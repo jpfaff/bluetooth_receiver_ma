@@ -2,39 +2,35 @@
 set -e
 
 NAME=$(bashio::config 'bluetooth_name')
+MODE=$(bashio::config 'stream_mode')
+URL=$(bashio::config 'stream_url')
+PORT=$(bashio::config 'http_port')
+BITRATE=$(bashio::config 'bitrate')
 
 bashio::log.info "Starting Bluetooth Receiver V3"
 
-export DBUS_SYSTEM_BUS_ADDRESS=unix:path=/run/dbus/system_bus_socket
-
 # Runtime dirs
+mkdir -p /run/dbus
 mkdir -p /var/run/pulse
 mkdir -p /tmp/pulse
 
-# Runtime dirs
-export XDG_RUNTIME_DIR=/tmp/runtime-root
-mkdir -p $XDG_RUNTIME_DIR
-chmod 700 $XDG_RUNTIME_DIR
-
-mkdir -p /run/dbus
-
-# Bluetooth
-if command -v bluetoothd >/dev/null 2>&1; then
-    bluetoothd --experimental &
-else
-    bashio::log.error "bluetoothd missing from image"
-    exit 1
-fi
-
+# Bluetooth daemon
+bluetoothd --experimental &
 sleep 3
 
-# PipeWire
-pipewire &
-wireplumber &
+# PulseAudio system mode
+pulseaudio --system \
+  --disallow-exit \
+  --daemonize=yes \
+  --exit-idle-time=-1
 
 sleep 5
 
-# Bluetooth setup
+# Load bluetooth modules
+pactl load-module module-bluetooth-policy || true
+pactl load-module module-bluetooth-discover || true
+
+# Bluetooth pairing mode
 bluetoothctl <<EOF
 power on
 agent on
@@ -44,7 +40,33 @@ pairable on
 system-alias $NAME
 EOF
 
-bashio::log.info "Bluetooth ready as $NAME"
+bashio::log.info "Bluetooth ready as: $NAME"
 
-# Keep alive
-sleep infinity
+# Wait for BT audio source
+sleep 8
+
+if [ "$MODE" = "push" ] && [ -n "$URL" ]; then
+    bashio::log.info "Pushing stream to $URL"
+
+    exec ffmpeg \
+      -f pulse -i default \
+      -ac 2 -ar 44100 \
+      -b:a ${BITRATE}k \
+      -f mp3 "$URL"
+
+else
+    bashio::log.info "Serving stream at port $PORT"
+
+    while true; do
+      ffmpeg \
+        -f pulse -i default \
+        -ac 2 -ar 44100 \
+        -b:a ${BITRATE}k \
+        -content_type audio/mpeg \
+        -f mp3 \
+        -listen 1 \
+        http://0.0.0.0:${PORT}/stream.mp3
+
+      sleep 2
+    done
+fi

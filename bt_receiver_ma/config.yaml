@@ -1,34 +1,39 @@
 name: Bluetooth Receiver for Music Assistant
 slug: bt_receiver_ma
-description: Receive Bluetooth audio and bridge to Music Assistant
-version: "1.0.4"
-url: https://github.com/YOUR_GITHUB/bluetooth_receiver_ma
+description: Stable Bluetooth A2DP sink bridge for Music Assistant
+version: "3.0.0"
 startup: services
 boot: auto
 init: false
 host_network: true
-homeassistant_api: true
 host_dbus: true
-host_network: true
+homeassistant_api: true
+
 privileged:
   - NET_ADMIN
   - SYS_ADMIN
+
 devices:
   - /dev
+
 map:
   - config:rw
+
 options:
   bluetooth_name: "HA Bluetooth Speaker"
   stream_mode: "http"
   stream_url: ""
   http_port: 8099
+  bitrate: 192
+
 schema:
   bluetooth_name: str
   stream_mode: list(http|push)
   stream_url: str?
   http_port: port
+  bitrate: int(96,320)
+
 arch:
   - amd64
   - aarch64
   - armv7
-
