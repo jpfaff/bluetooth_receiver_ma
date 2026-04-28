@@ -2,22 +2,36 @@
 set -e
 
 NAME=$(bashio::config 'bluetooth_name')
-MODE=$(bashio::config 'stream_mode')
-URL=$(bashio::config 'stream_url')
-PORT=$(bashio::config 'http_port')
 
 bashio::log.info "Starting Bluetooth Receiver"
 
+# Runtime dirs
+export XDG_RUNTIME_DIR=/tmp/runtime-root
+mkdir -p $XDG_RUNTIME_DIR
+chmod 700 $XDG_RUNTIME_DIR
+
 mkdir -p /run/dbus
+
+# DBus
 dbus-daemon --system --fork
 
-bluetoothd --experimental &
+# Bluetooth
+if command -v bluetoothd >/dev/null 2>&1; then
+    bluetoothd --experimental &
+else
+    bashio::log.error "bluetoothd missing from image"
+    exit 1
+fi
+
 sleep 3
 
+# PipeWire
 pipewire &
 wireplumber &
+
 sleep 5
 
+# Bluetooth setup
 bluetoothctl <<EOF
 power on
 agent on
@@ -27,21 +41,7 @@ pairable on
 system-alias $NAME
 EOF
 
-bashio::log.info "Bluetooth device visible as: $NAME"
+bashio::log.info "Bluetooth ready as $NAME"
 
-if [ "$MODE" = "push" ] && [ -n "$URL" ]; then
-    bashio::log.info "Pushing stream to $URL"
-    exec ffmpeg -re -f pulse -i default \
-      -ac 2 -ar 44100 \
-      -f mp3 "$URL"
-else
-    bashio::log.info "Serving stream on port $PORT"
-    while true; do
-      ffmpeg -re -f pulse -i default \
-        -ac 2 -ar 44100 \
-        -codec:a libmp3lame -b:a 192k \
-        -content_type audio/mpeg \
-        -f mp3 -listen 1 http://0.0.0.0:${PORT}/stream.mp3
-      sleep 2
-    done
-fi
+# Keep alive
+sleep infinity

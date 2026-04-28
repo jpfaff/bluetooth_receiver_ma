@@ -4,13 +4,12 @@ FROM ${BUILD_FROM}
 RUN apk add --no-cache \
     bash \
     bluez \
+    bluez-deprecated \
     dbus \
     pipewire \
     wireplumber \
-    pulseaudio-utils \
     ffmpeg \
-    python3 \
-    py3-pip
+    pulseaudio-utils
 
 COPY run.sh /run.sh
 RUN chmod +x /run.sh
