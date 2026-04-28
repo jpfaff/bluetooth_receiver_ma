@@ -1,7 +1,7 @@
 name: Bluetooth Receiver for Music Assistant
 slug: bt_receiver_ma
 description: Receive Bluetooth audio and bridge to Music Assistant
-version: "1.0.2"
+version: "1.0.4"
 url: https://github.com/YOUR_GITHUB/bluetooth_receiver_ma
 startup: services
 boot: auto
