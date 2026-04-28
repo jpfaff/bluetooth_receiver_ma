@@ -1,0 +1,13 @@
+configuration:
+  bluetooth_name:
+    name: Bluetooth Name
+    description: Visible Bluetooth speaker name
+  stream_mode:
+    name: Stream Mode
+    description: http = expose stream URL, push = send directly
+  stream_url:
+    name: Stream URL
+    description: Music Assistant ingest URL if push mode
+  http_port:
+    name: HTTP Port
+    description: Port used for stream.mp3
